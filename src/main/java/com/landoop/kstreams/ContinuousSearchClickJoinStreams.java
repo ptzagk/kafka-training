@@ -4,21 +4,21 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.common.serialization.Serdes;
 import org.apache.kafka.streams.KafkaStreams;
 import org.apache.kafka.streams.StreamsConfig;
+import org.apache.kafka.streams.kstream.JoinWindows;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.KStreamBuilder;
-import org.apache.kafka.streams.kstream.KTable;
 
-import java.util.Arrays;
 import java.util.Properties;
+import java.util.concurrent.TimeUnit;
 
-public class ContinuousWordCount {
+public class ContinuousSearchClickJoinStreams {
 
   public static void main(String[] args) throws Exception {
 
     String brokers = System.getenv("BROKERS");
 
     Properties props = new Properties();
-    props.put(StreamsConfig.APPLICATION_ID_CONFIG, "wordcount");
+    props.put(StreamsConfig.APPLICATION_ID_CONFIG, "search-click-join");
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
     props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
@@ -33,21 +33,17 @@ public class ContinuousWordCount {
     // represent lines of text (for the sake of this example, we ignore whatever may be stored
     // in the message keys).
     KStreamBuilder builder = new KStreamBuilder();
-    KStream<String, String> textLines = builder.stream("quotes");
+    KStream<String, String> searches = builder.stream("searches");
+    KStream<String, String> clicks = builder.stream("clicks");
 
-    KTable<String, String> count = textLines
-            // Split each text line, by whitespace, into words.
-            // NO RE-PARTITIONING AS WE DON'T CHANGE THEY KEY
-            .flatMapValues(value -> Arrays.asList(value.toLowerCase().split("\\W+")))
-            // Group the text words as message keys
-            .groupBy((key, word) -> word)
-            // Count the occurrences of each word (message key).
-            .count("WordCount")
-            .mapValues(value -> value.toString());
+    KStream<String, String> joined = searches.join(clicks,
+            (searchValue, clickValue) -> "search=" + searchValue + " ,click= " + clickValue,
+            JoinWindows.of(TimeUnit.SECONDS.toMillis(5)),
+            Serdes.String(),
+            Serdes.String(),
+            Serdes.String());
 
-    count.print();
-    // Store the running counts as a changelog stream to the output topic.
-    count.to(Serdes.String(), Serdes.String(), "quotes-wordcount");
+    joined.to(Serdes.String(), Serdes.String(), "search-click-join");
 
     KafkaStreams streams = new KafkaStreams(builder, props);
     streams.start();

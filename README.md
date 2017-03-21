@@ -12,8 +12,16 @@ Export in environment variables
 
 Run apps:
     
-    # Create topic `quotes` with 3 partitions - keep sending <String,String> messages
+    # Create topic `quotes` with 3 partitions - keep sending Pinky & Brain quotes as String
     java -cp target/kafka-training-jar-with-dependencies.jar com.landoop.produce.ContinuousTextTextProducer
-    # Read from topic `quotes` into KTable with 3 partitions - keep sending <String,String> messages
+    # Read from topic `quotes` into KTable with 3 partitions - do word count into `quotes-wordcount`
     java -cp target/kafka-training-jar-with-dependencies.jar com.landoop.kstreams.ContinuousWordCount
+
+Join-Streams
+    
+    # Create topic `clicks` and `searches` with 3 x partitions - keep sending 10% searches 90% clicks
+    java -cp target/kafka-training-jar-with-dependencies.jar com.landoop.produce.ContinuousSearchClickProducer
+    # Join `clicks` with `searches` into `search-click-join` 
+    java -cp target/kafka-training-jar-with-dependencies.jar com.landoop.kstreams.ContinuousSearchClickJoinStreams
+    
     
