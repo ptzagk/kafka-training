@@ -22,6 +22,8 @@ public class ContinuousSearchClickJoinStreams {
     props.put(StreamsConfig.BOOTSTRAP_SERVERS_CONFIG, brokers);
     props.put(StreamsConfig.KEY_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
     props.put(StreamsConfig.VALUE_SERDE_CLASS_CONFIG, Serdes.String().getClass().getName());
+    // run 3 threads
+    props.put(StreamsConfig.NUM_STREAM_THREADS_CONFIG, 3);
 
     // setting offset reset to earliest so that we can re-run the demo code with the same pre-loaded data
     // Note: To re-run the demo, you need to use the offset reset tool:

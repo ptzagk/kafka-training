@@ -24,4 +24,24 @@ Join-Streams
     # Join `clicks` with `searches` into `search-click-join` 
     java -cp target/kafka-training-jar-with-dependencies.jar com.landoop.kstreams.ContinuousSearchClickJoinStreams
     
+### Enable JMX
     
+To enable JMX on a KStream application pass in the following parameters.
+    
+    -Dcom.sun.management.jmxremote
+    -Dcom.sun.management.jmxremote.port=9010
+    -Dcom.sun.management.jmxremote.local.only=false
+    -Dcom.sun.management.jmxremote.authenticate=false
+    -Dcom.sun.management.jmxremote.ssl=false
+
+i.e. 
+
+    
+```cmd
+java -Dcom.sun.management.jmxremote \
+     -Dcom.sun.management.jmxremote.port=9010 \
+     -Dcom.sun.management.jmxremote.local.only=false \
+     -Dcom.sun.management.jmxremote.authenticate=false \
+     -Dcom.sun.management.jmxremote.ssl=false \
+     -cp target/kafka-training-jar-with-dependencies.jar com.landoop.kstreams.ContinuousSearchClickJoinStreams
+```
